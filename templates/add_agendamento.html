@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Adicionar Agendamento</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f4f4f9, #e0e0e7);
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
+            animation: fadeIn 1s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        h1 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #007bff;
+            font-weight: bold;
+        }
+        .icon {
+            font-size: 22px;
+            margin-right: 8px;
+            color: #007bff;
+        }
+        label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        input,
+        select,
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        input:focus,
+        select:focus,
+        button:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .modal-content {
+            background-color: #fff;
+            margin: auto;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            animation: fadeIn 0.3s ease;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        .close:hover,
+        .close:focus {
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-calendar-plus icon"></i>Adicionar Agendamento</h1>
+        <form action="{{ url_for('add_agendamento') }}" method="post">
+            <label for="data"><i class="fas fa-calendar-alt icon"></i>Data:</label>
+            <input type="date" id="data" name="data" required />
+            <label for="horario_inicio"><i class="fas fa-clock icon"></i>Horário de Início:</label>
+            <input type="time" id="horario_inicio" name="horario_inicio" min="07:00" max="22:00" required />
+            <label for="horario_fim"><i class="fas fa-clock icon"></i>Horário de Fim:</label>
+            <input type="time" id="horario_fim" name="horario_fim" min="07:00" max="22:00" required />
+            <label for="equipamento_tipo"><i class="fas fa-tools icon"></i>Equipamento:</label>
+            <select id="equipamento_tipo" name="equipamento_tipo" required>
+                {% for equipamento in available_equipamentos %}
+                <option value="{{ equipamento.tipo }}">{{ equipamento.tipo }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit"><i class="fas fa-check icon"></i>Agendar</button>
+        </form>
+    </div>
+
+    <!-- Pop-up Modal -->
+    <div id="errorModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p id="errorMessage"></p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var dataInput = document.getElementById('data');
+            var today = new Date();
+            var formattedDate = today.toISOString().substr(0, 10);
+            dataInput.setAttribute('min', formattedDate);
+
+            var messages = JSON.parse('{{ get_flashed_messages(with_categories=true) | tojson | safe }}');
+            if (messages.length > 0) {
+                messages.forEach(function(message) {
+                    var category = message[0];
+                    var text = message[1];
+                    if (category === "error") {
+                        document.getElementById('errorMessage').innerText = text;
+                        document.getElementById('errorModal').style.display = 'flex';
+                    }
+                });
+            }
+
+            document.querySelector(".close").onclick = function() {
+                document.getElementById('errorModal').style.display = "none";
+            }
+
+            window.onclick = function(event) {
+                if (event.target == document.getElementById('errorModal')) {
+                    document.getElementById('errorModal').style.display = "none";
+                }
+            }
+        });
+    </script>
+</body>
+</html>
