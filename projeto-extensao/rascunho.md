@@ -1,1 +1,0 @@
-html modelo e marca add_equipmante
